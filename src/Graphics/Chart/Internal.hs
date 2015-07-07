@@ -59,11 +59,32 @@ drawSvg ((defaultChart <>) -> c@(Chart (Settings _
 
 -- | Default chart settings
 defaultChart :: Chart a
-defaultChart = Chart (Settings Default 250 500) 
-                     (Aes (Specific $ D.circle 2) Default Default)
-                     []
+defaultChart = height 250 <> width 500 <> marker (D.circle 2)
 
 -- | Create a new chart with a single layer
 layer :: (Chart a -> a -> Diagram B) -> Chart a
 layer f = Chart mempty mempty [f]
+
+
+{- Setting and Aesthetic combinators -}
+
+emptySettings :: Settings
+emptySettings = Settings Default Default Default
+
+title :: String -> Chart a
+title x  = Chart (emptySettings {title_    = Specific x}) mempty []
+
+height, width :: Double -> Chart a
+height x = Chart (emptySettings {height_   = Specific x}) mempty []
+width  x = Chart (emptySettings {width_    = Specific x}) mempty []
+
+emptyAes :: Aesthetic
+emptyAes = Aes Default Default Default
+
+marker :: Diagram B -> Chart a
+marker x = Chart mempty (emptyAes {marker_ = Specific x}) []
+
+fg, bg :: Colour Double -> Chart a
+fg x     = Chart mempty (emptyAes {fg_     = Specific x}) []
+bg x     = Chart mempty (emptyAes {bg_     = Specific x}) []
 

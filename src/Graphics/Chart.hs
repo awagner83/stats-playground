@@ -5,6 +5,17 @@ module Graphics.Chart
     
     , drawSvg
 
+    -- Settings Combinators
+    , title
+    , height
+    , width
+
+    -- Aesthetic Combinators
+    , marker
+    , fg
+    , bg
+
+    -- Layers
     , points
     , line
     ) where
