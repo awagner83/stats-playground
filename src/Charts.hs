@@ -1,34 +1,23 @@
 {-# LANGUAGE PartialTypeSignatures, ViewPatterns, OverloadedStrings #-}
-module Charts where
+module Main where
 
-import Data.List (genericLength)
-import Diagrams.Prelude
-import Diagrams.Backend.SVG
-import Lucid.Base
-import qualified Data.ByteString.Lazy as B
+import Data.Monoid
+import Graphics.Chart
+import Vga
 
---main = mainWith $ frame 1 $
---              bars "Super important... chart review!" [50, 23, 100, 90]
+main = do
+    push $ drawSvg points (sinePoints 50)
+    push $ drawSvg line (sinePoints 70)
+    push $ drawSvg (points <> line) (sinePoints 100)
+    push $ drawSvg line (tanPoints 100)
+    push $ drawSvg (points <> line) (logPoints 50)
 
---main = B.putStrLn $ renderBS example1
+sinePoints :: Int -> [(Double, Double)]
+sinePoints n = take n $ zip [1,1.2..] $ map sin [1.0,1.2..]
 
-example1 :: _
-example1 = renderDia SVG (SVGOptions (mkWidth 250) Nothing "") myDiagram
-  where myDiagram = frame 1 rawDiagram
-        rawDiagram = bars "Super important... chart review!" [50, 23, 100, 90]
+tanPoints :: Int -> [(Double, Double)]
+tanPoints n = take n $ zip [1,1.01..] $ map tan [1.0,1.01..]
 
-
--- | Bar-chart diagram
-bars :: String -> [_] -> Diagram B
-bars title xs = title'
-                ===
-                (hsep 0.1 . map (alignB . bar) . scale $ xs)
-  where scale xs@(maximum -> m) = map (/m) xs
-        title'      = (text title <> rect titleLength 1 # lw 0) # fontSize (local 1)
-        titleLength = genericLength title
-        n           = genericLength xs 
-
--- | Draw a single bar in a bar-chart
-bar :: _ -> Diagram B
-bar x = rect 0.5 x # fc grey # lc white
+logPoints :: Int -> [(Double, Double)]
+logPoints n = take n $ zip [1,1.2..] $ map log [1.0,1.2..]
 

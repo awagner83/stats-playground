@@ -21,6 +21,19 @@ executable stats-playground
   -- other-extensions:    
   build-depends:
     base >=4.8 && <4.9, diagrams ==1.3, diagrams-lib ==1.3,
-    diagrams-svg ==1.3.*, lucid ==2.9.*, bytestring ==0.10.*
+    diagrams-svg ==1.3.*, lucid ==2.9.*, bytestring ==0.10.*,
+    optional-args, colour
   hs-source-dirs:      src
   default-language:    Haskell2010
+
+executable charts
+  main-is:             Charts.hs
+  -- other-modules:       
+  -- other-extensions:    
+  build-depends:
+    base >=4.8 && <4.9, diagrams ==1.3, diagrams-lib ==1.3,
+    diagrams-svg ==1.3.*, lucid ==2.9.*, bytestring ==0.10.*,
+    vga, optional-args, colour
+  hs-source-dirs:      src
+  default-language:    Haskell2010
+
