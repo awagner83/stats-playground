@@ -14,13 +14,14 @@ import qualified Diagrams.Prelude as D
 
 data Chart a   = Chart Settings (Aesthetic) [(Chart a -> a -> Diagram B)]
 
-data Settings  = Settings { title_  :: Optional String
-                          , height_ :: Optional Double
-                          , width_  :: Optional Double
+data Settings  = Settings { title_     :: Optional String
+                          , height_    :: Optional Double
+                          , width_     :: Optional Double
                           } deriving Show
-data Aesthetic = Aes      { marker_ :: Optional (Diagram B)
-                          , fg_     :: Optional (Colour Double)
-                          , bg_     :: Optional (Colour Double)
+data Aesthetic = Aes      { marker_    :: Optional (Diagram B)
+                          , fillColor_ :: Optional (Colour Double)
+                          , lineColor_ :: Optional (Colour Double)
+                          , bgColor_   :: Optional (Colour Double)
                           }
 
 instance Show (Chart a) where
@@ -35,9 +36,10 @@ instance Monoid Settings where
             (Settings t2 h2 w2) = Settings (t2 <|> t1) (h2 <|> h1) (w2 <|> w1)
 
 instance Monoid Aesthetic where
-    mempty = Aes Default Default Default
-    mappend (Aes m1 f1 b1)
-            (Aes m2 f2 b2) = Aes (m2 <|> m1) (f2 <|> f1) (b2 <|> b1)
+    mempty = Aes Default Default Default Default
+    mappend (Aes a1 b1 c1 d1)
+            (Aes a2 b2 c2 d2) = Aes (a2 <|> a1) (b2 <|> b1)
+                                    (c2 <|> c1) (d2 <|> d1)
 
 instance Monoid (Chart a) where
     mempty = Chart mempty mempty []
@@ -59,7 +61,9 @@ drawSvg ((defaultChart <>) -> c@(Chart (Settings _
 
 -- | Default chart settings
 defaultChart :: Chart a
-defaultChart = height 250 <> width 500 <> marker (D.circle 2)
+defaultChart = height 250 <> width 500
+            <> marker (D.circle 2)
+            <> lineColor D.black <> fillColor D.black
 
 -- | Create a new chart with a single layer
 layer :: (Chart a -> a -> Diagram B) -> Chart a
@@ -68,23 +72,18 @@ layer f = Chart mempty mempty [f]
 
 {- Setting and Aesthetic combinators -}
 
-emptySettings :: Settings
-emptySettings = Settings Default Default Default
-
 title :: String -> Chart a
-title x  = Chart (emptySettings {title_    = Specific x}) mempty []
+title x  = Chart (mempty {title_    = Specific x}) mempty []
 
 height, width :: Double -> Chart a
-height x = Chart (emptySettings {height_   = Specific x}) mempty []
-width  x = Chart (emptySettings {width_    = Specific x}) mempty []
-
-emptyAes :: Aesthetic
-emptyAes = Aes Default Default Default
+height x = Chart (mempty {height_   = Specific x}) mempty []
+width  x = Chart (mempty {width_    = Specific x}) mempty []
 
 marker :: Diagram B -> Chart a
-marker x = Chart mempty (emptyAes {marker_ = Specific x}) []
+marker x = Chart mempty (mempty {marker_       = Specific x}) []
 
-fg, bg :: Colour Double -> Chart a
-fg x     = Chart mempty (emptyAes {fg_     = Specific x}) []
-bg x     = Chart mempty (emptyAes {bg_     = Specific x}) []
+fillColor, lineColor, bgColor :: Colour Double -> Chart a
+fillColor x = Chart mempty (mempty {fillColor_ = Specific x}) []
+lineColor x = Chart mempty (mempty {lineColor_ = Specific x}) []
+bgColor   x = Chart mempty (mempty {bgColor_   = Specific x}) []
 

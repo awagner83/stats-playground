@@ -12,8 +12,9 @@ module Graphics.Chart
 
     -- Aesthetic Combinators
     , marker
-    , fg
-    , bg
+    , lineColor
+    , fillColor
+    , bgColor
 
     -- Layers
     , points
