@@ -8,7 +8,7 @@ import Graphics.Chart.Internal (Chart(..), Settings(..), Aesthetic(..), layer)
 import qualified Graphics.Chart.Internal as G
 
 -- | Plot points
-points :: Chart [(Double, Double)] B
+points :: Chart [(Double, Double)]
 points = layer go where
     go (Chart (Settings { G.height_ = Specific h
                         , G.width_  = Specific w
@@ -23,7 +23,7 @@ points = layer go where
     go _ _ = error "points: Empty Settings or Aesthetic values!"
 
 -- | Plot points as line
-line :: Chart [(Double, Double)] B
+line :: Chart [(Double, Double)]
 line = layer go where
     go (Chart (Settings { G.height_ = Specific h
                         , G.width_  = Specific w
