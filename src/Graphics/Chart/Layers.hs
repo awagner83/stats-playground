@@ -8,7 +8,7 @@ import Graphics.Chart.Internal (Chart(..), Settings(..), Aesthetic(..), layer)
 import qualified Graphics.Chart.Internal as G
 
 -- | Plot points
-points :: Chart [(Double, Double)]
+points :: Chart (Double, Double)
 points = layer go where
     go (Chart (Settings { G.height_    = Specific h
                         , G.width_     = Specific w
@@ -16,9 +16,10 @@ points = layer go where
               (Aes      { G.marker_    = Specific m
                         , G.lineColor_ = Specific lineColor
                         , G.fillColor_ = Specific fillColor
+                        , G.subset_    = f
                         })
               _
-       ) xs = let xs' = zip x' y'
+       ) xs = let xs' = subsetVals f xs $ zip x' y'
                   (x , y ) = unzip xs
                   (x', y') = (scaleVals w x, scaleVals h y)
                   p (x, y) = m # translate (x ^& y) # pointStyle
@@ -27,14 +28,16 @@ points = layer go where
     go _ _ = error "points: Empty Settings or Aesthetic values!"
 
 -- | Plot points as line
-line :: Chart [(Double, Double)]
+line :: Chart (Double, Double)
 line = layer go where
     go (Chart (Settings { G.height_    = Specific h
                         , G.width_     = Specific w
                         })
-              (Aes      { G.lineColor_ = Specific color })
+              (Aes      { G.lineColor_ = Specific color
+                        , G.subset_    = f
+                        })
               _
-       ) xs = let xs' = zip x' y'
+       ) xs = let xs' = subsetVals f xs $ zip x' y'
                   (x , y ) = unzip xs
                   (x', y') = (scaleVals w x, scaleVals h y)
               in fromVertices (map p2 xs') # lc color
@@ -46,4 +49,8 @@ scaleVals s xs = map go xs where
     go x = ((x - minX) / (maxX - minX)) * s
     minX = minimum xs
     maxX = maximum xs
+
+-- | Filter values given subset function
+subsetVals :: (a -> Bool) -> [a] -> [a] -> [a]
+subsetVals f xs = map snd . filter (f . fst) . zip xs
 

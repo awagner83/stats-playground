@@ -12,16 +12,17 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import qualified Diagrams.Prelude as D
 
-data Chart a   = Chart Settings (Aesthetic) [(Chart a -> a -> Diagram B)]
+data Chart a   = Chart Settings (Aesthetic a) [(Chart a -> [a] -> Diagram B)]
 
 data Settings  = Settings { title_     :: Optional String
                           , height_    :: Optional Double
                           , width_     :: Optional Double
                           } deriving Show
-data Aesthetic = Aes      { marker_    :: Optional (Diagram B)
+data Aesthetic a = Aes    { marker_    :: Optional (Diagram B)
                           , fillColor_ :: Optional (Colour Double)
                           , lineColor_ :: Optional (Colour Double)
                           , bgColor_   :: Optional (Colour Double)
+                          , subset_    :: (a -> Bool)
                           }
 
 instance Show (Chart a) where
@@ -35,11 +36,12 @@ instance Monoid Settings where
     mappend (Settings t1 h1 w1)
             (Settings t2 h2 w2) = Settings (t2 <|> t1) (h2 <|> h1) (w2 <|> w1)
 
-instance Monoid Aesthetic where
-    mempty = Aes Default Default Default Default
-    mappend (Aes a1 b1 c1 d1)
-            (Aes a2 b2 c2 d2) = Aes (a2 <|> a1) (b2 <|> b1)
-                                    (c2 <|> c1) (d2 <|> d1)
+instance Monoid (Aesthetic a) where
+    mempty = Aes Default Default Default Default (const True)
+    mappend (Aes a1 b1 c1 d1 e1)
+            (Aes a2 b2 c2 d2 e2) = Aes (a2 <|> a1) (b2 <|> b1)
+                                       (c2 <|> c1) (d2 <|> d1)
+                                       ((&&) <$> e1 <*> e2)
 
 instance Monoid (Chart a) where
     mempty = Chart mempty mempty []
@@ -49,7 +51,7 @@ instance Monoid (Chart a) where
               xs' = xs1 <> xs2
 
 -- | Render chart as bytestring (html and svg)
-drawSvg :: Chart a -> a -> B.ByteString
+drawSvg :: Chart a -> [a] -> B.ByteString
 drawSvg ((defaultChart <>) -> c@(Chart (Settings _
                                                  (Specific h)
                                                  (Specific w)) _ xs)) a = go
@@ -66,7 +68,7 @@ defaultChart = height 250 <> width 500
             <> lineColor D.black <> fillColor D.black
 
 -- | Create a new chart with a single layer
-layer :: (Chart a -> a -> Diagram B) -> Chart a
+layer :: (Chart a -> [a] -> Diagram B) -> Chart a
 layer f = Chart mempty mempty [f]
 
 
@@ -86,4 +88,16 @@ fillColor, lineColor, bgColor :: Colour Double -> Chart a
 fillColor x = Chart mempty (mempty {fillColor_ = Specific x}) []
 lineColor x = Chart mempty (mempty {lineColor_ = Specific x}) []
 bgColor   x = Chart mempty (mempty {bgColor_   = Specific x}) []
+
+
+{- Misc chart modifiers -}
+
+-- | Scope chart settings
+scope :: Chart a -> Chart a
+scope c1@(Chart _ _ xs) = Chart mempty mempty (map inject xs)
+    where inject f = \c2 x -> f (c2 <> c1) x
+
+-- | Filter data going to given chart
+subset :: (a -> Bool) -> Chart a
+subset f = Chart mempty (mempty {subset_ = f}) []
 

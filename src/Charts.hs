@@ -12,7 +12,12 @@ main = do
     push $ drawSvg line (sinePoints 70)
     push $ drawSvg (points <> line <> height 100) (sinePoints 100)
     push $ drawSvg (line <> lineColor C.red) (tanPoints 100)
-    push $ drawSvg (points <> line <> marker (D.square 10) <> fillColor C.white <> lineColor C.grey) (logPoints 50)
+    push $ drawSvg (mconcat [ scope (points <> subset ((< 2) . fst)
+                                            <> marker (D.square 10))
+                            , scope (points <> subset ((> 3) . fst))
+                            , scope (line <> lineColor C.red)
+                            , fillColor C.white
+                            ]) (logPoints 50)
 
 sinePoints :: Int -> [(Double, Double)]
 sinePoints n = take n $ zip [1,1.2..] $ map sin [1.0,1.2..]

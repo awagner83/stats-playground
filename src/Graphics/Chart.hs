@@ -19,6 +19,10 @@ module Graphics.Chart
     -- Layers
     , points
     , line
+
+    -- Misc
+    , scope
+    , subset
     ) where
 
 import Graphics.Chart.Internal
